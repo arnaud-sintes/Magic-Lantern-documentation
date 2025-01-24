@@ -187,15 +187,37 @@ The **efficiency** of the *LJ92* algorithm is variable, generally with a compres
 - high sensor noise (*ISO gain*)
 - high entropy on the data storage (e.g.: *14-bits* got way more entropy than *10-bits*)
 
-For example, we may expect a compression ratio between *2.5:1* and *3:1* when shooting a smooth scene with low *ISO* in *12-bits* depth but between *1.8:1* and *2.3:1* when shooting a detailed scene with high *ISO* in *14-bits*.
+For instance, we may expect a compression ratio between *2.5:1* and *3:1* when shooting a smooth scene with low *ISO* in *12-bits* depth but between *1.8:1* and *2.3:1* when shooting a detailed scene with high *ISO* in *14-bits*.
 
 ## Jpeg images
 
-Jpeg photo / 8 bits per RGB channel conversion / YUV color space conversion / chroma subsampling (4:4:4, 4:2:2, 4:2:0) / 4:2:2 chroma subsampling YCbCr / compression depends of quality parameter (fine: ~90%, normal: ~75%) / quality Large/Medium/Small affects image resolution (downscaling)
+When *raw* is not needed (most of the time: to reduce storage space and/or because we do not perform extreme post-processing on the photography, but also to allow quick image review - hence a generally available *raw+jpeg* option), *Canon* cameras offers alternatively a regular **lossy JPEG** image format.
+
+Saving an image using *Jpeg* on a *Canon* camera implies a [*YUV* color space conversion](https://en.wikipedia.org/wiki/Y%E2%80%B2UV), more specifically a *[YCbCr](https://en.wikipedia.org/wiki/YCbCr)* conversion, where colors are represented with one **luminance** component (*Y*) and two **chrominance** components (*Cb*: blue-difference, *Cr*: red-difference).
+
+Because *YUV* color space is mostly based over the *luminance* perception by human eyes, the *chrominance* components *can be* degraded in order to reduce the storage space, the process being named [chroma subsampling](https://en.wikipedia.org/wiki/Chroma_subsampling).
+
+Different ***chroma subsampling* schemes** are availables, commonly expressed using a three-part ratio ***J\:a\:b***, where "*J*" is the horizontal sampling reference (usually 4), "*a*" the number of chrominance samples (*Cr*, *Cb*) in the first row of *J* pixels and "*b*" the number of changes of chrominance samples (*Cr*, *Cb*) between the first and second row of *J* pixels.
+
+Typically, a "*4:4:4*" indicates there's no chroma subsampling performed (full resolution), while "*4:2:0*" indicates a chroma subsampling with a half horizontal and a half vertical resolution, the *5D3* relying on its side over a "***4:2:2***" chroma subsampling (half horizontal but full vertical resolution) when saving in *JPEG*.
+
+When reading an image saved with this *Jpeg* format, software can re-compute three regular *red*, *green* and *blue* channels per pixel, with a maximum of *8-bits* of information per channel in our case, implying first a huge decimation of the original dynamic range from *14-bits* to *8-bits* then some color information loss due to the chroma sub-sampling process (as we're not dealing with a *4:4:4* scheme here).
+
+Saving an image using a lossy *Jpeg* algorithm implies also some degradation of the image features themselves, due to the usage of a [discrete cosine transform](https://en.wikipedia.org/wiki/Discrete_cosine_transform) (*DCT*) producing more or less visible "*blocks*" of data depending of the "*quality*" parameter of the compression algorithm: on the *5D3*, two quality values are available ("*fine*", meaning a ~90% *JPEG* quality and "*normal*", meaning a ~75% *JPEG* quality).
+
+Note also the *5D3* proposes another *Jpeg* attribute which is directly related to the saved image dimensions, implying a potential spatial resolution downscaling: "*Large*", to use to native image resolution (*5760 x 3840*), "*Medium*" to downscale it to *3840 x 2560* and "*Small*", to downscale it to *2880 x 1920*.
 
 ## Native video
 
-MOV / H.264 video / 4:2:0 chroma subsampling internal (can deal with 4:2:2 with external HDMI recorder) / native 1080p resolution , bitrate (91MBps ALL-I - Intra-frame compression, 30Mbps IPB - Inter-frame compression) / note Magic Lantern can crank-up the H.264 bitrate
+Most *Canon* cameras proposes nowadays to natively deal with **videos**, at least in [Full HD](https://en.wikipedia.org/wiki/1080p) resolution (also name "***1080p***"), meaning a downscaled image resolution of *1920 x 1080* pixels compared to the raw data resolution.
+
+These videos are saved using an [*Apple*'s *QuickTime* ***MOV***](https://en.wikipedia.org/wiki/QuickTime) file container mutexing one *video channel* compressed using the *[Advanced Video Coding](https://en.wikipedia.org/wiki/Advanced_Video_Coding)* (***AVC***, also known as ***H.264*** or *MPEG-4 part 10*) codec and one **uncompressed** *audio channel* ([linear pulse-code modulation](https://en.wikipedia.org/wiki/Pulse-code_modulation) - *LPCM*).
+
+As for the *JPEG* algorithm used to deal with images, the *H.264* video compression algorithm implies a *YUV* **color space conversion** with a lossy **chroma subsampling** operation ("***4:2:0***" scheme internal, can be extended to a "*4:2:2*" scheme when using an *external HDMI recorder*) and also more generally a lossy encoding depending of the target **video bitrate**: *91 Mbps* using intra-frame compression option (*ALL-I*) or *30 Mbps* using inter-frame (*IPB*).
+
+> [!NOTE]
+>
+> Some *Magic Lantern* options allows to crank up this target video bitrate using a multiplication factor, leading to a potential increase of video quality (but with some loss of recording stability).
 
 ## Video profiles
 
