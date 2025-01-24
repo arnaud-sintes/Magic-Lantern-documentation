@@ -18,6 +18,10 @@ Video being basically a *sequence of images*, it's important to first focus on a
 
 This image sensor is itself composed of multiple **red**, **green** and **blue** (*[RGB](https://en.wikipedia.org/wiki/RGB_color_model)*) individual [photosensors](https://en.wikipedia.org/wiki/Photodetector), whose numerical data goes through a **filtering layer** used to distribute the *RGB* information on a specific **square grid** storage named a **color filter array** (*[CFA](https://en.wikipedia.org/wiki/Color_filter_array)*).
 
+![undefined](https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Bayer_pattern_on_sensor_profile.svg/1920px-Bayer_pattern_on_sensor_profile.svg.png)
+
+![File:Bayer pattern on sensor.svg](https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Bayer_pattern_on_sensor.svg/700px-Bayer_pattern_on_sensor.svg.png)
+
 The specific storage pattern used on the *Canon EOS* cameras is the [Bayer filter mosaic](https://en.wikipedia.org/wiki/Bayer_filter), allowing to store one *half green*, one *quarter red* and one *quarter blue* values per *cell* (see below for the definition of a cell and related mathematics).
 
 To illustrate this, imagine first the image sensor of the camera as a rectangle with a specific dimension, e.g.: *35mm* "[full-frame](https://en.wikipedia.org/wiki/Full-frame_DSLR)" on the *5D3*, being approximatively *36mm* horizontal and *24mm* vertical, the surface of this rectangle being fed with multiple *RGB* photosensors, e.g.: *5760 x 3840* on the *5D3* (*22.1184* millions sensors):
@@ -199,11 +203,15 @@ Because *YUV* color space is mostly based over the *luminance* perception by hum
 
 Different ***chroma subsampling* schemes** are availables, commonly expressed using a three-part ratio ***J\:a\:b***, where "*J*" is the horizontal sampling reference (usually 4), "*a*" the number of chrominance samples (*Cr*, *Cb*) in the first row of *J* pixels and "*b*" the number of changes of chrominance samples (*Cr*, *Cb*) between the first and second row of *J* pixels.
 
+![undefined](https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Common_chroma_subsampling_ratios_YCbCr_CORRECTED.svg/1920px-Common_chroma_subsampling_ratios_YCbCr_CORRECTED.svg.png)
+
 Typically, a "*4:4:4*" indicates there's no chroma subsampling performed (full resolution), while "*4:2:0*" indicates a chroma subsampling with a half horizontal and a half vertical resolution, the *5D3* relying on its side over a "***4:2:2***" chroma subsampling (half horizontal but full vertical resolution) when saving in *JPEG*.
 
 When reading an image saved with this *Jpeg* format, software can re-compute three regular *red*, *green* and *blue* channels per pixel, with a maximum of *8-bits* of information per channel in our case, implying first a huge decimation of the original dynamic range from *14-bits* to *8-bits* then some color information loss due to the chroma sub-sampling process (as we're not dealing with a *4:4:4* scheme here).
 
 Saving an image using a lossy *Jpeg* algorithm implies also some degradation of the image features themselves, due to the usage of a [discrete cosine transform](https://en.wikipedia.org/wiki/Discrete_cosine_transform) (*DCT*) producing more or less visible "*blocks*" of data depending of the "*quality*" parameter of the compression algorithm: on the *5D3*, two quality values are available ("*fine*", meaning a ~90% *JPEG* quality and "*normal*", meaning a ~75% *JPEG* quality).
+
+![img](https://miro.medium.com/v2/resize:fit:1030/0*z73oCrgTzitSlJyJ.png)
 
 Note also the *5D3* proposes another *Jpeg* attribute which is directly related to the saved image dimensions, implying a potential spatial resolution downscaling: "*Large*", to use to native image resolution (*5760 x 3840*), "*Medium*" to downscale it to *3840 x 2560* and "*Small*", to downscale it to *2880 x 1920*.
 
@@ -219,28 +227,102 @@ As for the *JPEG* algorithm used to deal with images, the *H.264* video compress
 >
 > Some *Magic Lantern* options allows to crank up this target video bitrate using a multiplication factor, leading to a potential increase of video quality (but with some loss of recording stability).
 
-## Video profiles
+## Picture profiles
 
-recording profiles and LOG video
+Because lossy compressed video is more commonly used than raw in the wild, a common workaround strategy emerged in order to **increase the [dynamic range](https://en.wikipedia.org/wiki/Dynamic_range)** of the recording images without doing any change around the compression format itself: the use of **picture profiles**.
+
+The principle is basically to apply some **mathematics transformation functions** on each *red*, *green* and *blue* channels of the image <u>**before**</u> the video compression stage in order to optimize the repartition of the channel's data information along its native storage range so it will thwart the decimation implied afterward by the compression algorithm.
+
+The idea behind is that video compression algorithms tends by design to retain well *middle*-ranged values in the histogram (considered as *properly exposed*) but threshold *shadows* and *highlights*, considering them as less useful information perception-wide.
+
+This is why the mathematical transformation functions applied over the input data is generally based over a [logarithmic scale](https://en.wikipedia.org/wiki/Logarithmic_scale) in order to *push* (or *compress*) the *shadows* (and with the lesser importance the *highlights*) information to the **center of the histogram**: considering the following *logarithmic* mathematical representation, imagine mentally the horizontal axis is representing the natural linear progression of a channel (*input*) value between its minimum intensity value (left: *0*%) to its maximum intensity value (right: *100*%) then the vertical axis gives the related *output* value after applying the mathematical *log* transformation (bottom: *0*% intensity, top: *100*% intensity), the *output* value information being itself sampled in the same data range than the *input* one (e.g.: *8-bits*).
+
+![Creating a log scale graph in MatLab - Stack Overflow](https://i.sstatic.net/w0CDB.jpg)
+
+By doing this, the original dynamic range is *compressed* naturally to the middle of the histogram:
+
+![Log Transformations and their Implications for Linear Regression | by  Mihail Yonchev | Medium](https://miro.medium.com/v2/resize:fit:1400/1*Bxf2uFMkfqLuWTZtrdlcGg.png)
+
+This implies a visually "*washed-out*" image result that will be **less subjected to compression algorithm loss** due to its centered histogram repartition:
+
+![Travel / Nature / Landscape / Cinematic / Adventure REC.709 to FLAT Picture  Profiles Vlog, Logc, Cinestyle, Canon Log, Bmd Film 4k, Slog, Slog3 ...](https://cdn.filtergrade.com/wp-content/uploads/2020/01/30103914/preview2-5.jpg)
+
+Of course it means that we will need to apply another "*opposite*" [gamma curve](https://en.wikipedia.org/wiki/Gamma_correction) over the image after the video decompression (at [color grading](https://en.wikipedia.org/wiki/Color_grading) stage) in order to re-establish the **colors** and **contrasts** close to the originally captured image, this curve being generally a [sigmoid curve](https://en.wikipedia.org/wiki/Sigmoid_function) (or *s-curve*):
+
+![Fun With Curves in Tableau Part 3: Sigmoid Curves – Do Mo(o)re with Data](https://domoorewithdata.com/wp-content/uploads/2022/01/image-4.png?w=500)
+
+Applying this principles over the images when doing video recording greatly increases the dynamic range (generally expressed in *stops number*), notably around the *shadows* information:
+
+![What Is D-Cinelike, D-log, And Normal Mode? | Cult of Drone](https://cultofdrone.com/wp-content/uploads/2020/07/dlog-vs-normal-1024x665.jpeg)
+
+A lot of different [log profiles](https://en.wikipedia.org/wiki/Log_profile) are available to do this (and still continue to be developed by the industry), being generally the result of proprietary studies which are directly related a specific camera sensor model's [color science](https://en.wikipedia.org/wiki/Color_science#:~:text=Color%20science%20is%20the%20scientific,extension%20of%20traditional%20color%20theory.), each *red*, *green* and *blue* channels being computed independently using a specific transformation function to retain the maximum information possible while being compressed.
+
+The *5D3* is natively able to handle **picture styles**, embedding some directly in the camera (*standard, portrait, landscape, neutral, faithful, monochrome*), allowing also to import external ones using the *PF2* file format.
+
+A very common picture style used by the *Canon EOS* videographers community back in time was the free *Technicolor CineStyle* profile, that came with both the *PF2* file used for recording and a *s-curve* in multiple file formats to be applied by post-processing software to re-establish the image.
+
+> [!NOTE]
+>
+> Even nowadays where raw video recording is more common, *log profiles* continue to be used by manufacturer, specifically when dealing with lossy compression algorithms over the raw data.
 
 ## Raw video
 
-ML RAW video / MLV / LJ92 algorithm (true lossless), no YUV conversion like RAW photo (keep Bayer pattern)
+Some years ago, *ML*'s developers unlock the ability to **record raw video** on some *Canon*'s camera models.
 
-## Bit-depth decimation
+It was a massive improvement as we're really talking about the direct recording of (*portions*) of the *Bayer* pattern itself (see below,  in *Raw images*) without any data loss (at least when not doing row or column *skipping*), not using any lossy frame compression technique, potentially in its native *14-bits* depth resolution.
 
-ML lower bitdepth (12 & 10 bits) / decimation / dynamic range, incidence on LJ92 compression rate (entropy)
+The first implementations provides a custom video container to store the video frames, named the **MLV** file format, but because of the recording **bus bandwidth limitations** of the hardware (see later), it was initially just meant as a proof-of-concept and was barely usable (recording of only few frames then *stops*, or dealing with very low video [frame rates](https://en.wikipedia.org/wiki/Frame_rate)) and it seems impossible to be able to record the whole sensor surface (massive resolution of *5760 x 3840* x *14-bits*) at *24* frame-per-second (*fps*).
 
--> expose well, use lowest ISO
+Later, multiple improvements where added to the raw video module :
+
+- *crop modes*, which is the ability to focus only over a **sub-portion** of the native raw *Bayer* pattern, meaning less data to capture and record (video resolution compromise, then)
+
+- row and/or column *skipping* and *binning* techniques, typically used in the badly-named "*anamorphic*" modes where the whole raw sensor buffer is used but some columns are *skipped* or *blended* together in order to reduce the amount of data to record in the end (requiring then some post-processing **data extrapolation**, similarly to traditional [anamorphic format](https://en.wikipedia.org/wiki/Anamorphic_format) horizontal *de-squeezing* process, hence the preset name)
+
+- a systematic application of the ***LJ92* lossless compression algorithm** (see above) over the raw video frames in order to also reduce the amount of data recorded by the camera
+
+- an optional decimation of the original *14-bits* depth data to *12* or *10-bits*, reducing drastically the entropy, increasing then the *LJ92* algorithm compression rate, leading to a great reduction of the amount of data to record
+
+  > [!NOTE]
+  >
+  > Of course, this comes theoretically with a dynamic range reduction penalty, the decimation of the bit-depth being related to the *deep black* values of the histogram, but please note *12-bits* is generally extremely acceptable in real-life situations (well exposed shots with no extreme color-grading post-process implying a massive black values push-up), the decimated black values being generally related to noise information alone.
+
+By combining these techniques, *ML* really made raw video recording a tangible reality.
 
 ## Bus bandwidth
 
-why it's important: camera bandwidth (e.g: 5D3, SD & CF limits), stability / limit / recording buffer saturation (compression, write, flush) / drop, required bandwidth computation depending of resolution & bitrate
+As explained before, *ML* raw video module potentially unlocks the full ability to record the whole raw data sensor information without any loss (resolution, data bit-depth nor video frame rate compromise), the main limitation being the **camera bus bandwidth** used (after the *LJ92* compression stage) when we need to transfer the video frame data from the memory to the card (*MLV* file writing and flushing operation).
+
+TODO buffering process incidence and recording stability
+
+TODO each camera model and bus got its own limitations
+
+TODO limitation example: SD, CF on 5D3
+
+TODO computation depending of resolution, bit depth, frame rate, compression rate
+
+TODO tips to optimize compression rate: expose well, use lowest ISO, use 12 bits (double bonus)
 
 ## Workarounds
 
-workarounds: SD overclock (link to compatible cards), SD+CF card spanning
+TODO workarounds: SD overclock
+
+TODO link to compatible cards list
+
+TODO SD+CF card spanning
+
+TODO what we can expect then by combining all workarounds on a 5D3 (max. bandwith)
 
 ## Post-processing
 
-post-process workflow, constraints, MLV App, MLVFS, Resolve
+TODO post-process workflow
+
+TODO MLV to cDNG
+
+TODO MLV App
+
+TODO MLVFS
+
+TODO Resolve / AfterEffect
+
+TODO constraints, not streamlined on camera (lot of tweaks), not streamlined on post-process (with huge amount of data to handle)
