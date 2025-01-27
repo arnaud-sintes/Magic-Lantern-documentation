@@ -64,7 +64,7 @@ This format is based over the [*TIFF/EP*](https://en.wikipedia.org/wiki/TIFF/EP)
 
 The advantages of the *LJ92* lossless algorithm being its native compatibility with the *JPEG* standard and its simplicity, allowing it to be implemented on embedded system with limited computational resources like a camera.
 
-What's specifically good regarding camera's raw data is its ability to compress data **without any color space conversion**, meaning in our case an exact conservation of the *RGGB* original *Bayer* pattern (no *YUV* conversion, see below).
+What's specifically good regarding camera's raw data is also its ability to compress data **without any color space conversion**, meaning in our case an exact conservation of the *RGGB* original *Bayer* pattern (no *YUV* conversion, see below).
 
 The **efficiency** of the *LJ92* algorithm is variable, generally with a compression rate between *2:1* and *3:1*, depending of multiple factors that may lower it:
 
@@ -146,7 +146,7 @@ A very common picture style used by the *Canon EOS* videographers community back
 
 > [!NOTE]
 >
-> Even nowadays where raw video recording is more common, *log profiles* continue to be used by manufacturer, specifically when dealing with lossy compression algorithms over the raw data.
+> Even nowadays where raw video recording is more common, *log profiles* continue to be used by manufacturer, specifically when dealing with lossy compression algorithms over the raw data (e.g.: [*Black Magic BMRAW*](https://www.blackmagicdesign.com/fr/products/blackmagicraw)).
 
 ## Raw video
 
@@ -188,9 +188,9 @@ TODO tips to optimize compression rate: expose well, use lowest ISO, use 12 bits
 
 ## Workarounds
 
-TODO workarounds: SD overclock
+TODO workarounds: SD overclock transfer protocol (160MHz, 192MHz, 240MHz)
 
-TODO link to compatible cards list
+TODO link to compatible cards list https://wiki.magiclantern.fm/cards_240mhz
 
 TODO SD+CF card spanning
 
@@ -200,12 +200,14 @@ TODO what we can expect then by combining all workarounds on a 5D3 (max. bandwit
 
 TODO post-process workflow
 
-TODO MLV to cDNG
+TODO MLV to cDNG batch converter
 
-TODO MLV App
+TODO MLV App https://mlv.app/
 
-TODO MLVFS
+TODO MLVFS https://www.magiclantern.fm/forum/index.php?topic=25473.0
 
 TODO Resolve / AfterEffect
 
 TODO constraints, not streamlined on camera (lot of tweaks), not streamlined on post-process (with huge amount of data to handle)
+
+TODO ML LOG https://www.magiclantern.fm/forum/index.php?topic=20710.0
