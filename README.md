@@ -66,14 +66,14 @@ The advantages of the *LJ92* lossless algorithm being its native compatibility w
 
 What's specifically good regarding camera's raw data is also its ability to compress data **without any color space conversion**, meaning in our case an exact conservation of the *RGGB* original *Bayer* pattern (no *YUV* conversion, see below).
 
-The **efficiency** of the *LJ92* algorithm is variable, generally with a compression rate between *2:1* and *3:1*, depending of multiple factors that may lower it:
+The **efficiency** of the *LJ92* algorithm is variable, generally with a compression rate between *1.5:1* to *2:1*, depending of multiple factors that may lower it:
 
 - high image complexity (*simple uniform areas* vs *highly detailed noisy regions*)
 - high exposure, leading to more entropy in the data
 - high sensor noise (*ISO gain*)
 - high entropy on the data storage (e.g.: *14-bits* got way more entropy than *10-bits*)
 
-For instance, we may expect a compression ratio between *2.5:1* and *3:1* when shooting a smooth scene with low *ISO* in *12-bits* depth but between *1.8:1* and *2.3:1* when shooting a detailed scene with high *ISO* in *14-bits*.
+For instance, we may expect a compression ratio between *1.7:1* to *1.9:1* when shooting a smooth scene with low *ISO* in *12-bits* depth but between *1.5:1* to *1.7:1* when shooting a detailed scene with high *ISO* in *14-bits*.
 
 ## Jpeg images
 
@@ -176,38 +176,58 @@ By combining these techniques, *ML* really made raw video recording a tangible r
 
 As explained before, *ML* raw video module potentially unlocks the full ability to record the whole raw data sensor information without any loss (resolution, data bit-depth nor video frame rate compromise), the main limitation being the **camera bus bandwidth** used (after the *LJ92* compression stage) when we need to transfer the video frame data from the memory to the card (*MLV* file writing and flushing operation).
 
-TODO buffering process incidence and recording stability
+When video *Bayer* patterns are recorded by the camera and about to be stored on disk in the *MLV* format, they go temporarily through a record buffer that memorizes a certain amount of frames while doing the *LJ92* encoding and subsequent disk write operations: if these operations took too much time, the buffer becomes **saturated** then the camera **stops the recording** when reaching its buffering limit (buffer saturation is generally pictured on *ML* when recording data with a *green/orange/red* write indication).
 
-TODO each camera model and bus got its own limitations
+Of course the write operations time is directly correlated to the dimensions and complexity of the captured images, but it also depends of the **camera hardware capabilities**, the current **transfer protocol speed** and the **write speed capabilities** of the card currently targeted: *CF* cards are faster than *SD* ones, anyway their inner speed capabilities is totally dependent of the card's *models* and *series*.
 
-TODO limitation example: SD, CF on 5D3
+Currently, the only proper way to evaluate the maximum possible write capabilities of your camera and cards is to run the dedicated ***ML* speed benchmarks**:
 
-TODO computation depending of resolution, bit depth, frame rate, compression rate
+![](./README.assets/benchmark.png)
 
-TODO tips to optimize compression rate: expose well, use lowest ISO, use 12 bits (double bonus)
+Once you know the write speed (*SD*, *CF* or both), you can use the following formula to approximatively know if your current **raw video settings** are compatibles with these *write speeds* (the result must be inferior of the write speed limit):
 
-## Workarounds
+![image-20250127100127232](README.assets/speed_formula.png)
 
-TODO workarounds: SD overclock transfer protocol (160MHz, 192MHz, 240MHz)
+where:
 
-TODO link to compatible cards list https://wiki.magiclantern.fm/cards_240mhz
+- "*Width*" is the current **width** (in *pixel* unit) of the recorded video frames
+- "*Height*" is the current **height** (in *pixel* unit) of the recorded video frames
+- "*Frame Rate*" is the number of **frames per second** to target
+- "*Bit Depth*" is the *Bayer* pattern **bit depth** (originally *14-bits*, but can be decimated)
+- "*Compression Ratio*" is the *LJ92* **compression** algorithm that will reduce the size of the data: targeting a **1.6:1** ratio may be a good idea by default, as it's generally considered as a good average value with this algorithm
 
-TODO SD+CF card spanning
+For example, if you want to record a *14-bits raw 4K 2.39:1 @23.976fps* video, you have then to compute:
 
-TODO what we can expect then by combining all workarounds on a 5D3 (max. bandwith)
+```
+( 3840 x 1606 x 23.976 x 14 ) / ( 8 x 1.6 x 1024 x 1024 )
+= ~154 MBps (Megabyte per second)
+```
+
+Meaning that you need a constant write speed greater than approximatively *154 MBps* to get **continuous recording**.
+
+It's approximatively possible (at least on a *5D3*) using some *workarounds* (see later), anyway it will remain very unstable, so it's better to remember what was explained before around the *LJ92* algorithm to ensure it will work better:
+
+- *expose the scene well*, avoiding white saturation then more entropy (working against the compression algorithm)
+- use low *ISO value* (typically: *100 ISO* if possible) to reduce the noise
+- switch to *12-bits*, inducing a "*double-bonus*" regarding the *bit depth* reduction itself and an increase of the *LJ92* compression efficiency
+
+By applying only these three actions, it's easy to go from a *~154 MBps* target to a *~124 MBps* (considering a *1.7:1* compression ratio) one, ensuring way more headroom around recording speed, implying a huge increase of stability.
+
+Two **advanced workarounds** are also possible regarding the maximum possible bandwidth, using *ML*:
+
+- an **overclock** of the *SD* transfer protocol, up to *160MHz*, *192MHz* or *240MHz* speeds depending of the *SD* card model (please refer to the [*240MHz* compatible cards list](https://wiki.magiclantern.fm/cards_240mhz)), leading to a huge increase of the *SD bus* write speed capabilities
+- **card spanning** technique, allowing to alternate the write sequences between the *SD* and *CF* cards on camera with two buses (e.g.: *5D3*) in order to avoid buffers saturation
+
+By cumulating both, a *5D3* is typically able to reach its **design storage bandwidth limit** of *~145 MBps*, unlocking *4K* recording capabilities.
 
 ## Post-processing
 
-TODO post-process workflow
+Of course, *ML* *raw* video recording comes with certain disadvantages we cannot ignore:
 
-TODO MLV to cDNG batch converter
+- the amount of tweaking required when using *ML* (*overclock*, *card spanning*, *specific exposure*, limited *resolution*/*frame rate*/*aspect ratio*...)
+- the amount of **memory size** required on *SD* and/or *CD* cards to record the video sequences, and subsequently the amount of hard drive disk size required to store them
+- the specific *MLV* format used requiring some more **post-processing** to be usable: a *[cDNG](https://en.wikipedia.org/wiki/CinemaDNG)* conversion to be properly ingested by all major video processing software, which is potentially not trivial when the video was recorded using *card spanning* technique, requiring to join multiple video segments together
 
-TODO MLV App https://mlv.app/
+*Cinema DNG* conversion can be performed using a *batch converter*, via the [*MLVApp* software](https://mlv.app/) or via the [*MLVFS* tool](https://www.magiclantern.fm/forum/index.php?topic=25473.0) (creating some kind of virtual drive doing live conversions of *MLV* to *DNG* files).
 
-TODO MLVFS https://www.magiclantern.fm/forum/index.php?topic=25473.0
-
-TODO Resolve / AfterEffect
-
-TODO constraints, not streamlined on camera (lot of tweaks), not streamlined on post-process (with huge amount of data to handle)
-
-TODO ML LOG https://www.magiclantern.fm/forum/index.php?topic=20710.0
+One common habit with *MLV* to reduce the data size amount and go back to a more comfortable workflow is to perform a pre-grade operation over the *MLV* in order to optimize the image features, then encode the video using a more regular high-end video format like [*Apple ProRes 444*](https://en.wikipedia.org/wiki/Apple_ProRes), using optionally the dedicated *[ML Log profile](https://www.magiclantern.fm/forum/index.php?topic=20710.0)* to increase the dynamic range (see before).
