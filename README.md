@@ -18,141 +18,23 @@ Video being basically a *sequence of images*, it's important to first focus on a
 
 This image sensor is itself composed of multiple **red**, **green** and **blue** (*[RGB](https://en.wikipedia.org/wiki/RGB_color_model)*) individual [photosensors](https://en.wikipedia.org/wiki/Photodetector), whose numerical data goes through a **filtering layer** used to distribute the *RGB* information on a specific **square grid** storage named a **color filter array** (*[CFA](https://en.wikipedia.org/wiki/Color_filter_array)*).
 
-![undefined](https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Bayer_pattern_on_sensor_profile.svg/1920px-Bayer_pattern_on_sensor_profile.svg.png)
-
-![File:Bayer pattern on sensor.svg](https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Bayer_pattern_on_sensor.svg/700px-Bayer_pattern_on_sensor.svg.png)
+![](./README.assets/bayer.png)
 
 The specific storage pattern used on the *Canon EOS* cameras is the [Bayer filter mosaic](https://en.wikipedia.org/wiki/Bayer_filter), allowing to store one *half green*, one *quarter red* and one *quarter blue* values per *cell* (see below for the definition of a cell and related mathematics).
 
 To illustrate this, imagine first the image sensor of the camera as a rectangle with a specific dimension, e.g.: *35mm* "[full-frame](https://en.wikipedia.org/wiki/Full-frame_DSLR)" on the *5D3*, being approximatively *36mm* horizontal and *24mm* vertical, the surface of this rectangle being fed with multiple *RGB* photosensors, e.g.: *5760 x 3840* on the *5D3* (*22.1184* millions sensors):
 
-<table style="text-align: center">
-    <tr>
-        <td><font color=red>R</font><font color=green>G</font><font color=blue>B</font></td>
-        <td><font color=red>R</font><font color=green>G</font><font color=blue>B</font></td>
-        <td><font color=red>R</font><font color=green>G</font><font color=blue>B</font></td>
-        <td><font color=red>R</font><font color=green>G</font><font color=blue>B</font></td>
-        <td rowspan=4>x 5760 columns of photosensors<br />spread on 36mm</td>
-    </tr>
-    <tr>
-        <td><font color=red>R</font><font color=green>G</font><font color=blue>B</font></td>
-        <td><font color=red>R</font><font color=green>G</font><font color=blue>B</font></td>
-        <td><font color=red>R</font><font color=green>G</font><font color=blue>B</font></td>
-        <td><font color=red>R</font><font color=green>G</font><font color=blue>B</font></td>
-    </tr>
-    <tr>
-        <td><font color=red>R</font><font color=green>G</font><font color=blue>B</font></td>
-        <td><font color=red>R</font><font color=green>G</font><font color=blue>B</font></td>
-        <td><font color=red>R</font><font color=green>G</font><font color=blue>B</font></td>
-        <td><font color=red>R</font><font color=green>G</font><font color=blue>B</font></td>
-    </tr>
-    <tr>
-        <td><font color=red>R</font><font color=green>G</font><font color=blue>B</font></td>
-        <td><font color=red>R</font><font color=green>G</font><font color=blue>B</font></td>
-        <td><font color=red>R</font><font color=green>G</font><font color=blue>B</font></td>
-        <td><font color=red>R</font><font color=green>G</font><font color=blue>B</font></td>
-    </tr>
-    <tr>
-        <td colspan=4>x 3840 rows of photosensors spread on 24mm</td>
-    </tr>
-</table>
+![](./README.assets/photosensors.png)
 
 The *RGB* data acquired by the sensors goes then through the filtering layer to be stored following an organized *Bayer mosaic*: to do so, the photosensors *RGB* data on the rectangle surface are **grouped by four** following a ***2 x 2** pattern*, producing a ***2 x 2*** ***RG/GB*** space storage on the filtered mosaic (what's called previously a *cell*) where single **red** (*R*), **green** (*G*) and **blue** (*B*) information are organized the following way:
 
-<table>
-    <tr>
-        <td>
-<table style="text-align: center">
-    <tr>
-        <td><font color=red>R</font><font color=green>G</font><font color=blue>B</font></td>
-        <td><font color=red>R</font><font color=green>G</font><font color=blue>B</font></td>
-    </tr>
-    <tr>
-        <td><font color=red>R</font><font color=green>G</font><font color=blue>B</font></td>
-        <td><font color=red>R</font><font color=green>G</font><font color=blue>B</font></td>
-    </tr>
-    <tr>
-        <td colspan=2>2 x 2 photosensors</td>
-    </tr>
-</table>
-        </td>
-        <td style="text-align: center">
-            ➩ filter ➩
-		</td>
-		<td>
-<table color=white style="color: white; text-align: center">
-    <tr>
-        <td bgcolor=red>R</td><td bgcolor=green>G</td>
-    </tr>
-    <tr>
-		<td bgcolor=green>G</td><td bgcolor=blue>B</td>
-    </tr>
-    <tr>
-        <td colspan=2 style="color: black">2 x 2 Bayer mosaic cell</td>
-    </tr>
-</table>
-		</td>
-    </tr>
-</table>
+![](./README.assets/bayer_cell.png)
 
 This is why it was said before the *red* and *blue* information represents *quarter* photosensors values (*single* individual *red* and *blue* storages on the mosaic being the averaging of *four* original *red* and *blue* sensor data respectively) when stored on the *Bayer* mosaic but the *green* information is *half* photosensor value (*two* *green* storages on the mosaic being the averaging of *four* original *green* sensor data).
 
 After this filtering operation, the whole *Bayer* pattern looks like this:
 
-<table color=white style="color: white; text-align: center">
-    <tr>
-        <td bgcolor=red>R</td><td bgcolor=green>G</td>
-        <td bgcolor=red>R</td><td bgcolor=green>G</td>
-        <td bgcolor=red>R</td><td bgcolor=green>G</td>
-        <td bgcolor=red>R</td><td bgcolor=green>G</td>
-        <td bgcolor=red>R</td><td bgcolor=green>G</td>
-        <td bgcolor=red>R</td><td bgcolor=green>G</td>
-        <td rowspan=6 style="color: black">x 5760 columns</td>
-    </tr>
-    <tr>
-		<td bgcolor=green>G</td><td bgcolor=blue>B</td>
-        <td bgcolor=green>G</td><td bgcolor=blue>B</td>
-        <td bgcolor=green>G</td><td bgcolor=blue>B</td>
-        <td bgcolor=green>G</td><td bgcolor=blue>B</td>
-        <td bgcolor=green>G</td><td bgcolor=blue>B</td>
-        <td bgcolor=green>G</td><td bgcolor=blue>B</td>
-    </tr>
-    <tr>
-        <td bgcolor=red>R</td><td bgcolor=green>G</td>
-        <td bgcolor=red>R</td><td bgcolor=green>G</td>
-        <td bgcolor=red>R</td><td bgcolor=green>G</td>
-        <td bgcolor=red>R</td><td bgcolor=green>G</td>
-        <td bgcolor=red>R</td><td bgcolor=green>G</td>
-        <td bgcolor=red>R</td><td bgcolor=green>G</td>
-    </tr>
-    <tr>
-		<td bgcolor=green>G</td><td bgcolor=blue>B</td>
-        <td bgcolor=green>G</td><td bgcolor=blue>B</td>
-        <td bgcolor=green>G</td><td bgcolor=blue>B</td>
-        <td bgcolor=green>G</td><td bgcolor=blue>B</td>
-        <td bgcolor=green>G</td><td bgcolor=blue>B</td>
-        <td bgcolor=green>G</td><td bgcolor=blue>B</td>
-    </tr>
-    <tr>
-        <td bgcolor=red>R</td><td bgcolor=green>G</td>
-        <td bgcolor=red>R</td><td bgcolor=green>G</td>
-        <td bgcolor=red>R</td><td bgcolor=green>G</td>
-        <td bgcolor=red>R</td><td bgcolor=green>G</td>
-        <td bgcolor=red>R</td><td bgcolor=green>G</td>
-        <td bgcolor=red>R</td><td bgcolor=green>G</td>
-    </tr>
-    <tr>
-		<td bgcolor=green>G</td><td bgcolor=blue>B</td>
-        <td bgcolor=green>G</td><td bgcolor=blue>B</td>
-        <td bgcolor=green>G</td><td bgcolor=blue>B</td>
-        <td bgcolor=green>G</td><td bgcolor=blue>B</td>
-        <td bgcolor=green>G</td><td bgcolor=blue>B</td>
-        <td bgcolor=green>G</td><td bgcolor=blue>B</td>
-    </tr>
-    <tr>
-        <td colspan=12 style="color: black">x 3840 rows</td>
-    </tr>
-</table>
+![](./README.assets/whole_pattern.png)
 
 Each individual *red*, *green* and *blue* components in this *Bayer* pattern being encoded using an (*unsigned*) **14-bits** data numerical storage. 
 
@@ -175,7 +57,7 @@ This format is based over the [*TIFF/EP*](https://en.wikipedia.org/wiki/TIFF/EP)
 > In order to shutdown here potential useless discussions, we strongly emphases the fact that the *LJ92* compression algorithm used here is truly **<u>lossless</u>**, meaning the following chain of operation:
 >
 > ```
-> data-1 > LJ92 compression stage > data-2 > LJ92 de-compression stage -> data-3
+> [data-1] ➩ LJ92 compression stage ➩ [data-2] ➩ LJ92 de-compression stage ➩ [data-3]
 > ```
 >
 > leads to "*data-3*" being **binary equivalent** to original "*data-1*" information (no loss at all of any information).
@@ -201,9 +83,9 @@ Saving an image using *Jpeg* on a *Canon* camera implies a [*YUV* color space co
 
 Because *YUV* color space is mostly based over the *luminance* perception by human eyes, the *chrominance* components *can be* degraded in order to reduce the storage space, the process being named [chroma subsampling](https://en.wikipedia.org/wiki/Chroma_subsampling).
 
-Different ***chroma subsampling* schemes** are availables, commonly expressed using a three-part ratio ***J\:a\:b***, where "*J*" is the horizontal sampling reference (usually 4), "*a*" the number of chrominance samples (*Cr*, *Cb*) in the first row of *J* pixels and "*b*" the number of changes of chrominance samples (*Cr*, *Cb*) between the first and second row of *J* pixels.
+Different ***chroma subsampling* schemes** are available, commonly expressed using a three-part ratio ***J\:a\:b***, where "*J*" is the horizontal sampling reference (usually 4), "*a*" the number of chrominance samples (*Cr*, *Cb*) in the first row of *J* pixels and "*b*" the number of changes of chrominance samples (*Cr*, *Cb*) between the first and second row of *J* pixels:
 
-![undefined](https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Common_chroma_subsampling_ratios_YCbCr_CORRECTED.svg/1920px-Common_chroma_subsampling_ratios_YCbCr_CORRECTED.svg.png)
+![](./README.assets/chroma_subsampling.png)
 
 Typically, a "*4:4:4*" indicates there's no chroma subsampling performed (full resolution), while "*4:2:0*" indicates a chroma subsampling with a half horizontal and a half vertical resolution, the *5D3* relying on its side over a "***4:2:2***" chroma subsampling (half horizontal but full vertical resolution) when saving in *JPEG*.
 
@@ -211,7 +93,9 @@ When reading an image saved with this *Jpeg* format, software can re-compute thr
 
 Saving an image using a lossy *Jpeg* algorithm implies also some degradation of the image features themselves, due to the usage of a [discrete cosine transform](https://en.wikipedia.org/wiki/Discrete_cosine_transform) (*DCT*) producing more or less visible "*blocks*" of data depending of the "*quality*" parameter of the compression algorithm: on the *5D3*, two quality values are available ("*fine*", meaning a ~90% *JPEG* quality and "*normal*", meaning a ~75% *JPEG* quality).
 
-![img](https://miro.medium.com/v2/resize:fit:1030/0*z73oCrgTzitSlJyJ.png)
+| ![](./README.assets/img_before.png) | ![](./README.assets/img_before_0percent.jpg) |
+| ----------------------------------- | -------------------------------------------- |
+| *original image*                    | *0% JPEG quality equivalent image*           |
 
 Note also the *5D3* proposes another *Jpeg* attribute which is directly related to the saved image dimensions, implying a potential spatial resolution downscaling: "*Large*", to use to native image resolution (*5760 x 3840*), "*Medium*" to downscale it to *3840 x 2560* and "*Small*", to downscale it to *2880 x 1920*.
 
@@ -235,25 +119,24 @@ The principle is basically to apply some **mathematics transformation functions*
 
 The idea behind is that video compression algorithms tends by design to retain well *middle*-ranged values in the histogram (considered as *properly exposed*) but threshold *shadows* and *highlights*, considering them as less useful information perception-wide.
 
-This is why the mathematical transformation functions applied over the input data is generally based over a [logarithmic scale](https://en.wikipedia.org/wiki/Logarithmic_scale) in order to *push* (or *compress*) the *shadows* (and with the lesser importance the *highlights*) information to the **center of the histogram**: considering the following *logarithmic* mathematical representation, imagine mentally the horizontal axis is representing the natural linear progression of a channel (*input*) value between its minimum intensity value (left: *0*%) to its maximum intensity value (right: *100*%) then the vertical axis gives the related *output* value after applying the mathematical *log* transformation (bottom: *0*% intensity, top: *100*% intensity), the *output* value information being itself sampled in the same data range than the *input* one (e.g.: *8-bits*).
+This is why the mathematical transformation functions applied over the input data is generally based over a [logarithmic scale](https://en.wikipedia.org/wiki/Logarithmic_scale) in order to *push* (or *compress*) the *shadows* (and with the lesser importance the *highlights*) information to the **center of the histogram**: considering the following *pseudo-logarithmic* mathematical representation, imagine mentally the horizontal axis is representing the natural linear progression of a channel (*input*) value between its minimum intensity value (left: *0*) to its maximum intensity value (right: *1*) then the vertical axis gives the related *output* value after applying the mathematical transformation (bottom: *0* - minimum intensity, top: *1* - maximum intensity), the *output* value information being itself sampled in the same data range than the *input* one (e.g.: *8-bits*).
 
-![Creating a log scale graph in MatLab - Stack Overflow](https://i.sstatic.net/w0CDB.jpg)
+![](./README.assets/log_curve.png)
 
-By doing this, the original dynamic range is *compressed* naturally to the middle of the histogram:
+By doing this, the original dynamic range is *compressed* naturally to the middle of the histogram, implying a visually "*washed-out*" and darker image that will be **less subjected to compression algorithm loss** due to its centered histogram repartition:
 
-![Log Transformations and their Implications for Linear Regression | by  Mihail Yonchev | Medium](https://miro.medium.com/v2/resize:fit:1400/1*Bxf2uFMkfqLuWTZtrdlcGg.png)
-
-This implies a visually "*washed-out*" image result that will be **less subjected to compression algorithm loss** due to its centered histogram repartition:
-
-![Travel / Nature / Landscape / Cinematic / Adventure REC.709 to FLAT Picture  Profiles Vlog, Logc, Cinestyle, Canon Log, Bmd Film 4k, Slog, Slog3 ...](https://cdn.filtergrade.com/wp-content/uploads/2020/01/30103914/preview2-5.jpg)
+| ![](./README.assets/img_before.png)       | ![](./README.assets/img_log.png)             |
+| ----------------------------------------- | -------------------------------------------- |
+| ![](./README.assets/img_before_histo.png) | ![](./README.assets/img_log_histo.png)       |
+| original image with histogram             | image and histogram after applying log-curve |
 
 Of course it means that we will need to apply another "*opposite*" [gamma curve](https://en.wikipedia.org/wiki/Gamma_correction) over the image after the video decompression (at [color grading](https://en.wikipedia.org/wiki/Color_grading) stage) in order to re-establish the **colors** and **contrasts** close to the originally captured image, this curve being generally a [sigmoid curve](https://en.wikipedia.org/wiki/Sigmoid_function) (or *s-curve*):
 
-![Fun With Curves in Tableau Part 3: Sigmoid Curves – Do Mo(o)re with Data](https://domoorewithdata.com/wp-content/uploads/2022/01/image-4.png?w=500)
+![](./README.assets/s_curve.png)
 
 Applying this principles over the images when doing video recording greatly increases the dynamic range (generally expressed in *stops number*), notably around the *shadows* information:
 
-![What Is D-Cinelike, D-log, And Normal Mode? | Cult of Drone](https://cultofdrone.com/wp-content/uploads/2020/07/dlog-vs-normal-1024x665.jpeg)
+![](./README.assets/shades.png)
 
 A lot of different [log profiles](https://en.wikipedia.org/wiki/Log_profile) are available to do this (and still continue to be developed by the industry), being generally the result of proprietary studies which are directly related a specific camera sensor model's [color science](https://en.wikipedia.org/wiki/Color_science#:~:text=Color%20science%20is%20the%20scientific,extension%20of%20traditional%20color%20theory.), each *red*, *green* and *blue* channels being computed independently using a specific transformation function to retain the maximum information possible while being compressed.
 
