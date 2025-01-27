@@ -159,16 +159,13 @@ The first implementations provides a custom video container to store the video f
 Later, multiple improvements were added to the raw video module:
 
 - *crop modes*, which is the ability to focus only over a **sub-portion** of the native raw *Bayer* pattern, meaning less data to capture and record (video resolution compromise, then)
-
 - row and/or column *skipping* and *binning* techniques, typically used in the badly-named "*anamorphic*" modes where the whole raw sensor buffer is used but some columns are *skipped* or *blended* together in order to reduce the amount of data to record in the end (requiring then some post-processing **data extrapolation**, similarly to traditional [anamorphic format](https://en.wikipedia.org/wiki/Anamorphic_format) horizontal *de-squeezing* process, hence the preset name)
-
 - a systematic application of the ***LJ92* lossless compression algorithm** (see above) over the raw video frames to also reduce the amount of data recorded by the camera
-
 - an optional decimation of the original *14-bits* depth data to *12* or *10-bits*, reducing drastically the entropy, increasing then the *LJ92* algorithm compression rate, leading to a great reduction of the amount of data to record
 
-  > [!NOTE]
-  >
-  > Of course, this comes theoretically with a dynamic range reduction penalty, the decimation of the bit-depth being related to the *deep black* values of the histogram, but please note *12-bits* is generally extremely acceptable in real-life situations (well exposed shots with no extreme color-grading post-process implying a massive black values push-up), the decimated black values being generally related to noise information alone.
+> [!NOTE]
+>
+> Of course, this comes theoretically with a dynamic range reduction penalty, the decimation of the bit-depth being related to the *deep black* values of the histogram, but please note *12-bits* is generally extremely acceptable in real-life situations (well exposed shots with no extreme color-grading post-process implying a massive black values push-up), the decimated black values being generally related to noise information alone.
 
 By combining these techniques, *ML* really made raw video recording a tangible reality.
 
